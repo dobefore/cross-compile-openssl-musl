@@ -1,6 +1,6 @@
 # download openssl
 wget --no-check-certificate https://www.openssl.org/source/old/1.1.1/openssl-1.1.1f.tar.gz 
-tar -zxvf openssl-1.1.1f.tar.gz  -C $HOME
+tar -zxvf openssl-1.1.1f.tar.gz  -C .
 
 export PATH="$HOME/aarch64-linux-musl-cross/bin:$PATH"
 export MACHINE=aarch64
