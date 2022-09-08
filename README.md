@@ -5,7 +5,7 @@ After downloading to a folder in a file system,you may want to uncompress it usi
 ```
 tar -zxvf openssl1.1.1f_1.1.1_linux_arm64.tar.gz
 ```
-And the folder trees are as follows:
+And the folder trees (`tree openssl1.1.1f_1.1.1_linux_arm64 -L 2`) are as follows:
 ```
 openssl1.1.1f_1.1.1_linux_arm64
 └── openssl
