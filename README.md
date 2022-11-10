@@ -15,3 +15,5 @@ openssl1.1.1f_1.1.1_linux_arm64
     ├── share
     └── ssl
 ```
+
+Note: target arm uses `arm-rpi-4.9.3-linux-gnueabihf` (https://github.com/raspberrypi/tools.git $HOME/rpitools) instead of musl tool,yet this may have no effect on further rust build.
