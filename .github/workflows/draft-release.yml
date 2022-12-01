@@ -6,6 +6,43 @@ on:
     tags: ["[0-9]+.[0-9]+.[0-9]+*"]
 
 jobs:
+  x64:
+  # cross compile
+    name: Build x64
+    runs-on: ubuntu-latest
+    # after every step is finished,exporting to PATH will be clear,so in next step ,need re-export
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      #with musl c
+      - uses: robinraju/release-downloader@v1.4
+        with:
+          repository: "dobefore/musl-cross"
+          tag: "0.1.0"
+          fileName: "x86_64-linux-musl-cross.tgz"
+      - name: Copy musl-cross to home
+        run: cp x86_64-linux-musl-cross.tgz $HOME
+      # - name: Download cross-compile toolchain muslc
+      #   run: wget  -P $HOME https://musl.cc/aarch64-linux-musl-cross.tgz
+
+      - name: unpack cross-compile toolchains musl
+        run: tar -zxvf $HOME/x86_64-linux-musl-cross.tgz -C $HOME
+
+      - name: Download and unpack lib openssl and compile openssl
+        run: sh ./x64.sh
+  
+      - name: Create output directory
+        run: mkdir output
+
+      - name: Copy files to output
+        run: cp -r $HOME/openssl output/
+         
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: x64
+          path: output/*
   armv6:
     # cross compile
     name: Build armv6
@@ -83,6 +120,7 @@ jobs:
     needs:
       - armv6
       - arm64
+      - x64
       
       # above line should be added in run part below after windows item.
     steps:
@@ -102,6 +140,7 @@ jobs:
           echo "::set-output name=version::${VERSION}"
           echo "::set-output name=armv6dir::openssl1.1.1f_${MAJOR}.${MINOR}.${PATCH}_linux_armv6"
           echo "::set-output name=arm64dir::openssl1.1.1f_${MAJOR}.${MINOR}.${PATCH}_linux_arm64"
+          echo "::set-output name=x64dir::openssl1.1.1f_${MAJOR}.${MINOR}.${PATCH}_linux_x64"
           echo "::set-output name=innerdir::openssl1.1.1f-${VERSION}"
       - name: Create Release Draft
         id: create_release
@@ -158,5 +197,28 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./${{ steps.info.outputs.armv6dir }}.tar.gz
           asset_name: ${{ steps.info.outputs.armv6dir }}.tar.gz
+          asset_content_type: application/gzip
+       
+       # x64
+      - name: Create armv6 Directory
+        run: mkdir -p ${{ steps.info.outputs.x64dir }}
+
+      - name: Download armv6 Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: x64
+          path: ${{ steps.info.outputs.x64dir }}
+
+      - name: Create armv6 tarball
+        run: tar -zcvf ${{ steps.info.outputs.x64dir }}.tar.gz ${{ steps.info.outputs.x64dir }}
+
+      - name: Upload armv6 Artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ steps.info.outputs.x64dir }}.tar.gz
+          asset_name: ${{ steps.info.outputs.x64dir }}.tar.gz
           asset_content_type: application/gzip
        
